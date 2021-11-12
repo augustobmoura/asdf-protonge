@@ -1,0 +1,50 @@
+#! /usr/bin/env bash
+
+set -eu -o pipefail
+
+if ! type tac &> /dev/null; then
+	tac() {
+		tail -r -- "$@"
+	}
+fi
+
+ensure_cmds() {
+	for cmd in curl jq awk; do
+		if ! type "$cmd" &> /dev/null; then
+			pritnf 'Dependency `%s` not found! Please install it before using this plugin\n' "$cmd"
+		fi
+	done
+}
+
+get_releases_page() {
+	local page= curl_extra_args=()
+
+	page="$1"
+
+	if [ "${GITHUB_API_TOKEN:-}" ]; then
+		curl_extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
+	fi
+
+	curl "${curl_extra_args[@]}" -fL --silent "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases?per_page=100&page=$page"
+}
+
+list_all() {
+	local tags=() curr_page_size=
+	local -i page=1
+
+	ensure_cmds
+
+	while ! [ "$curr_page_size" = 0 ]; do
+		local content=
+
+		content="$(get_releases_page "$page")"
+
+		jq -r '.[] | .tag_name' <<< "$content"
+
+		curr_page_size=$(jq length <<< "$content")
+		page+=1
+	done
+}
+
+list_all "$@" | tac | tr '\n' ' '
+

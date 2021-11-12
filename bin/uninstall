@@ -1,0 +1,21 @@
+#! /usr/bin/env bash
+
+set -eu -o pipefail
+
+STEAM_INSTALL_DIR="$HOME/.steam/root/compatibilitytools.d"
+
+remove_steam_links() {
+	local version=
+	version="$1"
+
+	link_path="$STEAM_INSTALL_DIR/Proton-$version"
+
+	if [ -L "$link_path" ] && ! [ -e "$link_path" ]; then
+		printf "Unlinking from Steam... "
+		rm "$link_path"
+		printf "OK\n"
+	fi
+}
+
+rm -rf "$ASDF_INSTALL_PATH"
+remove_steam_links "$ASDF_INSTALL_VERSION"

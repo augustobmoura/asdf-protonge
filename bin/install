@@ -1,0 +1,29 @@
+#! /usr/bin/env bash
+
+set -eu -o pipefail
+
+STEAM_PROTON_DIR="$HOME/.steam/root/compatibilitytools.d"
+
+install() {
+	local install_type= version= download_path= install_path
+
+	install_type="$1"
+	version="$2"
+	download_path="$(cd "$3" && pwd -P)"
+	install_path="$(cd "$4" && pwd -P)"
+
+	local tarball_path=
+
+	tarball_path="$download_path/tarball.tar.gz"
+
+	printf "Extracting... "
+	tar zxf "$tarball_path" -C "$install_path"
+	printf "OK\n"
+
+	printf "Linking new version to Steam... "
+	mkdir -p "$STEAM_PROTON_DIR"
+	ln -s "$install_path" "$STEAM_PROTON_DIR/Proton-$version"
+	printf "OK\n"
+}
+
+install "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"
