@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  plugin_test:
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Test plugin
+        uses: asdf-vm/actions/plugin-test@v1
+        with:
+          command: ls "$HOME/.steam/root/compatibilitytools.d/*"
