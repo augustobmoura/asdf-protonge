@@ -3,20 +3,40 @@
 set -eu -o pipefail
 
 fetch() {
+	local url="$1" download_path="$2"
 	local extra_args=()
 
 	if [ "${GITHUB_API_TOKEN:-}" ]; then
 		extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
 	fi
 
-	command curl -fL "${extra_args[@]}" "$@"
+	if type aria2c &> /dev/null; then
+		aria2c -x4 -c "${extra_args[@]}" "$url" -d "$(dirname "$download_path")" -o "$(basename "$download_path")"
+	else
+		curl -fL -C - "${extra_args[@]}" "$url" -o "$download_path"
+	fi
+}
+
+get_tar_url() {
+	local tag="$1"
+	local extra_args=()
+
+	if [ "${GITHUB_API_TOKEN:-}" ]; then
+		extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
+	fi
+
+	curl -fL "${extra_args[@]}" https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/"$tag" \
+		| grep -Eo 'browser_download_url":"[^"]*' \
+		| grep tar.gz \
+		| grep -o "https://.*$"
 }
 
 download_pre_compiled() {
-	local download_path=
-	download_path="$1"
+	local tag="$1" download_path="$2" tar_url=
+	tar_url=$(get_tar_url "$tag")
 
-	fetch "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/$version/Proton-$version.tar.gz" -o "$download_path"
+
+	fetch "$tar_url" "$download_path"
 }
 
 download() {
@@ -30,7 +50,7 @@ download() {
 	tarball_path="$download_path/tarball.tar.gz"
 
 	if [ "$download_type" = version ]; then
-		download_pre_compiled "$tarball_path"
+		download_pre_compiled "$version" "$tarball_path"
 	else
 		printf "Building from source not supported\n"
 		exit 1

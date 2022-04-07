@@ -2,20 +2,23 @@
 
 set -eu -o pipefail
 
-STEAM_INSTALL_DIR="$HOME/.steam/root/compatibilitytools.d"
+: "${STEAM_ROOT=$HOME/.steam/root}"
+: "${ASDF_PROTONGE_STEAM_COMPAT_DIR=$STEAM_ROOT/compatibilitytools.d}"
 
 remove_steam_links() {
-	local version=
-	version="$1"
+	local version="$1" asdf_install_path="$2"
 
-	link_path="$STEAM_INSTALL_DIR/Proton-$version"
+	# Sanity check, all installations made via asdf should be a link
+	if [ -L "$asdf_install_path" ]; then
+		local linked_location=$(cd "$asdf_install_path" && pwd -P)
 
-	if [ -L "$link_path" ] && ! [ -e "$link_path" ]; then
-		printf "Unlinking from Steam... "
-		rm "$link_path"
-		printf "OK\n"
+		# Remove true installation location
+		rm -rf "$linked_location"
+		printf "Installation at %s removed\n" "$linked_location"
+		rm "$asdf_install_path"
+	else
+		rm -rf "$asdf_install_path"
 	fi
 }
 
-rm -rf "$ASDF_INSTALL_PATH"
-remove_steam_links "$ASDF_INSTALL_VERSION"
+remove_steam_links "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"

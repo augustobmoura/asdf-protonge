@@ -4,47 +4,33 @@ set -eu -o pipefail
 
 if ! type tac &> /dev/null; then
 	tac() {
-		tail -r -- "$@"
+		awk '{ lines[NR] = $0 } END { for(i = NR; i > 0; i--) print(lines[i]) }'
 	}
 fi
 
-ensure_cmds() {
-	for cmd in curl jq awk; do
-		if ! type "$cmd" &> /dev/null; then
-			pritnf 'Dependency `%s` not found! Please install it before using this plugin\n' "$cmd"
-		fi
-	done
-}
-
 get_releases_page() {
-	local page= curl_extra_args=()
-
-	page="$1"
+	local page="$1" args=()
 
 	if [ "${GITHUB_API_TOKEN:-}" ]; then
-		curl_extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
+		args+=(--header "Authorization: token $GITHUB_API_TOKEN")
 	fi
 
-	curl "${curl_extra_args[@]}" -fL --silent "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases?per_page=100&page=$page"
+	curl ${args+"${args[@]}"} -fL "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases?per_page=100&page=$page"
 }
 
 list_all() {
-	local tags=() curr_page_size=
+	local tags= curr_page_size=
 	local -i page=1
 
-	ensure_cmds
-
 	while ! [ "$curr_page_size" = 0 ]; do
-		local content=
+		tags=$(get_releases_page "$page" | awk -F: '/tag_name/ { gsub("[\", ]", "", $2); print($2) }')
 
-		content="$(get_releases_page "$page")"
+		printf "%s\n" "$tags"
 
-		jq -r '.[] | .tag_name' <<< "$content"
-
-		curr_page_size=$(jq length <<< "$content")
+		curr_page_size=$(awk '/./ { i++ } END { print(i || 0) }' <<< "$tags")
 		page+=1
 	done
 }
 
-list_all "$@" | tac | tr '\n' ' '
+list_all "$@" | tac | xargs
 
