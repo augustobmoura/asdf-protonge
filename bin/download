@@ -32,7 +32,7 @@ get_tar_url() {
 	fi
 
 	curl -fL "${extra_args[@]}" https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/"$tag" \
-		| grep -Eo 'browser_download_url":"[^"]*' \
+		| grep -Eo 'browser_download_url"\s*:\s*"[^"]*' \
 		| grep tar.gz \
 		| grep -o "https://.*$"
 }
