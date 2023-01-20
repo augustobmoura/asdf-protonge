@@ -20,7 +20,7 @@ install_tarball() {
 	printf "OK\n"
 
 	new_ls=$(ls "$ASDF_PROTONGE_STEAM_COMPAT_DIR")
-	extracted_file=$(printf '%s\n%s' "$old_ls" "$new_ls" | sort | uniq -u)
+	extracted_file=$(printf '%s\n%s' "$old_ls" "$new_ls" | sort | uniq -u | xargs)
 
 	rmdir "$asdf_install_path"
 	ln -s "$ASDF_PROTONGE_STEAM_COMPAT_DIR/$extracted_file" "$asdf_install_path"
