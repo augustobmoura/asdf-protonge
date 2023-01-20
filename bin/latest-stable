@@ -1,0 +1,4 @@
+#! /usr/bin/env bash
+
+"$(dirname "$0")/list-all" 2> /dev/null | tr ' ' '\n' | grep -E "$1" | tail -1
+
