@@ -7,7 +7,13 @@ set -eu -o pipefail
 start_managing() {
 	local version="${1#Proton-}"
 
-	local installation_path="$ASDF_PROTONGE_STEAM_COMPAT_DIR/Proton-$version"
+	local installation_path=
+	for f in "$ASDF_PROTONGE_STEAM_COMPAT_DIR/"{Proton-,}"$version"; do
+		if [ -d "$f" ]; then
+			installation_path="$f"
+		fi
+	done
+
 	local asdf_install_path="${ASDF_DATA_DIR:-$HOME/.asdf}/installs/$PLUGIN_NAME/$version"
 
 	if ! [ -d "$installation_path" ]; then
