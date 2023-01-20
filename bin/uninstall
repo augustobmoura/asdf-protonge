@@ -2,8 +2,7 @@
 
 set -eu -o pipefail
 
-: "${STEAM_ROOT=$HOME/.steam/root}"
-: "${ASDF_PROTONGE_STEAM_COMPAT_DIR=$STEAM_ROOT/compatibilitytools.d}"
+. "$(dirname "$0")/../lib/utils.bash"
 
 remove_steam_links() {
 	local version="$1" asdf_install_path="$2"
