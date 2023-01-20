@@ -2,6 +2,12 @@
 
 set -eu -o pipefail
 
+. "$(dirname "$0")/../lib/utils.bash"
+
+is_executable() {
+	type "$1" &> /dev/null
+}
+
 fetch() {
 	local url="$1" download_path="$2"
 	local extra_args=()
@@ -10,7 +16,7 @@ fetch() {
 		extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
 	fi
 
-	if type aria2c &> /dev/null; then
+	if is_executable aria2c; then
 		aria2c -x4 -c "${extra_args[@]}" "$url" -d "$(dirname "$download_path")" -o "$(basename "$download_path")"
 	else
 		curl -fL -C - "${extra_args[@]}" "$url" -o "$download_path"
