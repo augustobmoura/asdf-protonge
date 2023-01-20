@@ -21,6 +21,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v1
+        uses: asdf-vm/actions/plugin-test@v1.1.0
         with:
           command: ls ~/.steam/root/compatibilitytools.d/*
