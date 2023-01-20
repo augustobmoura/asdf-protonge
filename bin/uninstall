@@ -10,7 +10,8 @@ remove_steam_links() {
 
 	# Sanity check, all installations made via asdf should be a link
 	if [ -L "$asdf_install_path" ]; then
-		local linked_location=$(cd "$asdf_install_path" && pwd -P)
+		local linked_location=
+		linked_location=$(cd "$asdf_install_path" && pwd -P)
 
 		# Remove true installation location
 		rm -rf "$linked_location"
