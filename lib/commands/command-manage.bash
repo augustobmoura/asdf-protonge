@@ -44,7 +44,7 @@ $ERROR: Version %s is already being managed by asdf but points to a different lo
 	fi
 
 	ln -s "$installation_path" "$asdf_install_path"
-	printf "Managing %s as version %s now\n" "$installation_path" "$version"
+	printf "$SUCCESS: Managing %s as version %s now\n" "$installation_path" "$version"
 }
 
 for arg; do
