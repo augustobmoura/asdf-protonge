@@ -39,8 +39,12 @@ get_tar_url() {
 
 download_pre_compiled() {
 	local tag="$1" download_path="$2" tar_url=
-	tar_url=$(get_tar_url "$tag")
+	tar_url=$(get_tar_url "$tag" || true)
 
+	if ! [ "$tar_url" ]; then
+		printf "Installation of version %s not possible: no pre-compiled binaries\n" "$tag"
+		return 1
+	fi
 
 	fetch "$tar_url" "$download_path"
 }
