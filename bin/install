@@ -10,22 +10,6 @@ install_tarball() {
 	local tarball_path="$download_path/tarball.tar.gz"
 	local target_dir="$ASDF_PROTONGE_STEAM_COMPAT_DIR/Proton-$version"
 
-	if [ -d "$target_dir" ]; then
-		printf "
-$ERROR: Directory for installation already exists and it's not being managed by asdf.
-This situation is probably because you installed this version with other tools different than asdf, or the versions being managed by asdf went out of sync.
-
-To reinstall this version, remove the existing directory (%s) and try again.
-
-    rm -rf \"%s\" && asdf install %s %s
-
-If you want to force asfd to manage this version (meaning that \`asdf uninstall\` will actually remove this directory), run:
-
-    asdf %s manage %s
-" "$target_dir" "$target_dir" "$PLUGIN_NAME" "$version" "$PLUGIN_NAME" "$version"
-		return 1
-	fi
-
 	mkdir -p "$ASDF_PROTONGE_STEAM_COMPAT_DIR"
 
 	printf "Extracting... "
