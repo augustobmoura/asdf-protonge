@@ -12,12 +12,18 @@ install_tarball() {
 
 	mkdir -p "$ASDF_PROTONGE_STEAM_COMPAT_DIR"
 
+	local old_ls= new_ls= extracted_file=
+	old_ls=$(ls "$ASDF_PROTONGE_STEAM_COMPAT_DIR")
+
 	printf "Extracting... "
 	tar zxf "$tarball_path" -C "$ASDF_PROTONGE_STEAM_COMPAT_DIR/"
 	printf "OK\n"
 
+	new_ls=$(ls "$ASDF_PROTONGE_STEAM_COMPAT_DIR")
+	extracted_file=$(printf '%s\n%s' "$old_ls" "$new_ls" | sort | uniq -u)
+
 	rmdir "$asdf_install_path"
-	ln -s "$ASDF_PROTONGE_STEAM_COMPAT_DIR/Proton-$version" "$asdf_install_path" 
+	ln -s "$ASDF_PROTONGE_STEAM_COMPAT_DIR/$extracted_file" "$asdf_install_path"
 }
 
 install_tarball "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"
