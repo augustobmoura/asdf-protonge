@@ -1,4 +1,4 @@
-# asdf-protonge
+# asdf-protonge [![Build](https://github.com/augustobmoura/asdf-protonge/actions/workflows/test.yml/badge.svg)](https://github.com/augustobmoura/asdf-protonge/actions/workflows/test.yml)
 
 Unofficial [asdf](https://asdf-vm.com/) plugin for [GloriousEggroll custom Proton](https://github.com/GloriousEggroll/proton-ge-custom/) distribution.
 
