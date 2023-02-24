@@ -24,14 +24,14 @@ by default in the rc file of your shell of preference (`.bashrc`, `.zshrc`,
 
 ## How it works
 
-We are basically doing the instructions for manual installation, we download the
-version from GitHub and extract it on `~/.steam/root/compatibilitytools.d` by
+We are basically doing the instructions for manual installation:
+we download the version from GitHub and extract it on `~/.steam/root/compatibilitytools.d` by
 default, you can customize the extraction location by setting the `ASDF_PROTONGE_STEAM_COMPAT_DIR`
 environment variable (if you are using flatpak's steam for example, you can set
 it to `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/` on
 your regular rc file).
 
-We manage installed versions by symlink the extracted directory to
+We manage installed versions by symlinking the extracted directory to
 `$ASDF_DIR/installs/protonge/$version`, that way we can prevent double
 installations and effectively run:
 
