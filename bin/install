@@ -23,7 +23,7 @@ install_tarball() {
 	extracted_file=$(printf '%s\n%s' "$old_ls" "$new_ls" | sort | uniq -u | xargs)
 
 	rmdir "$asdf_install_path"
-	ln -s "$ASDF_PROTONGE_STEAM_COMPAT_DIR/$extracted_file" "$asdf_install_path"
+	ln -fs "$ASDF_PROTONGE_STEAM_COMPAT_DIR/$extracted_file" "$asdf_install_path"
 }
 
 install_tarball "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"
