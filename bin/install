@@ -7,7 +7,7 @@ set -eu -o pipefail
 COMPAT_DIR="$ASDF_PROTONGE_STEAM_COMPAT_DIR"
 
 _read_file() {
-	cat
+	cat "$1"
 }
 
 if which pv &>/dev/null; then
