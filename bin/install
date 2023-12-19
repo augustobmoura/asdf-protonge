@@ -37,7 +37,8 @@ install_tarball() {
 	ln -fs "$COMPAT_DIR/$extracted_file" "$asdf_install_path"
 	printf "Symlinked %s to %s\n" "$(colored "$YELLOW" "$asdf_install_path")" "$(colored "$CYAN" "$COMPAT_DIR/$extracted_file")"
 
-	printf "$(colored "$GREEN" "Successfully installed!") Remember to restart your Steam, if it is already opened\n"
+	printf "$(colored "$GREEN" "Successfully installed!") Remember to restart your Steam, if it is already opened, and enable ProtonGE
+More information on enabling: https://github.com/GloriousEggroll/proton-ge-custom#enabling\n"
 }
 
 install_tarball "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"
