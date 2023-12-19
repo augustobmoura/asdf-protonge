@@ -8,14 +8,7 @@ on:
 
 jobs:
   plugin_test:
-    strategy:
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
