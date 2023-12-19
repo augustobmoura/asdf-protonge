@@ -5,25 +5,21 @@ set -eu -o pipefail
 . "$(dirname "$0")/../lib/utils.bash"
 
 is_executable() {
-	type "$1" &> /dev/null
+	type "$1" &>/dev/null
 }
 
 fetch() {
-	local url="$1" download_path="$2"
+	local url="$1"
 	local extra_args=()
 
 	if [ "${GITHUB_API_TOKEN:-}" ]; then
 		extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
 	fi
 
-	if is_executable aria2c; then
-		aria2c -x4 -c "${extra_args[@]}" "$url" -d "$(dirname "$download_path")" -o "$(basename "$download_path")"
-	else
-		curl -fL -C - "${extra_args[@]}" "$url" -o "$download_path"
-	fi
+	curl -fLO -C - "${extra_args[@]}" "$url"
 }
 
-get_tar_url() {
+get_download_urls() {
 	local tag="$1"
 	local extra_args=()
 
@@ -31,22 +27,9 @@ get_tar_url() {
 		extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
 	fi
 
-	curl -fL "${extra_args[@]}" https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/"$tag" \
-		| grep -Eo 'browser_download_url"\s*:\s*"[^"]*' \
-		| grep tar.gz \
-		| grep -o "https://.*$"
-}
-
-download_pre_compiled() {
-	local tag="$1" download_path="$2" tar_url=
-	tar_url=$(get_tar_url "$tag" || true)
-
-	if ! [ "$tar_url" ]; then
-		printf "Installation of version %s not possible: no pre-compiled binaries\n" "$tag"
-		return 1
-	fi
-
-	fetch "$tar_url" "$download_path"
+	curl -sfL "${extra_args[@]}" https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/"$tag" |
+		grep -Eo 'browser_download_url"\s*:\s*"[^"]*' |
+		grep -o "https://.*$"
 }
 
 check_for_already_installed() {
@@ -69,7 +52,7 @@ If you want to force asfd to manage this version (meaning that \`asdf uninstall\
 	fi
 }
 
-download() {
+download() (
 	local download_type= version= download_path=
 
 	check_for_already_installed "$version"
@@ -78,15 +61,37 @@ download() {
 	version="$2"
 	download_path="$(cd "$3" && pwd -P)"
 
-	local tarball_path=
-	tarball_path="$download_path/tarball.tar.gz"
+	cd "$download_path"
+
+	local urls=
+	urls="$(get_download_urls "$version")"
+
+	local tarball_url= checksum_url=
+	tarball_url="$(printf "%s\n" "$urls" | grep -E '\.tar\.gz$')"
+	checksum_url="$(printf "%s\n" "$urls" | grep -E '\.sha512sum$')"
 
 	if [ "$download_type" = version ]; then
-		download_pre_compiled "$version" "$tarball_path"
+		if ! [ "$tarball_url" ]; then
+			printf "Installation of version %s not possible: no pre-compiled binaries\n" "$tag"
+			return 1
+		fi
+
+		printf "Downloading tarball...\n"
+		fetch "$tarball_url"
+
+		printf "Downloading checksum...\n"
+		fetch "$checksum_url"
+
+		printf "Validating checksum\n"
+		if ! sha512sum -c ./*.sha512sum; then
+			printf "$(colored "$RED" "Checksum verification failed!\n"). Aborting...\n"
+			rm ./*.{tar.gz,sha512sum}
+			exit 1
+		fi
 	else
 		printf "Building from source not supported\n"
 		exit 1
 	fi
-}
+)
 
 download "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH"
