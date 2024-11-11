@@ -11,6 +11,11 @@ repo as a plugin:
 asdf plugin-add protonge https://github.com/augustobmoura/asdf-protonge.git
 ```
 
+Optional tools:
+- [`pv`](https://www.ivarch.com/programs/pv.shtml): We use `pv` to show progress
+  bars when extracting the tarballs. It is specially useful in slower computers
+  which could take a few minutes to finish extraction.
+
 ## Configuration
 
 Configuration of the plugin is done by environment variables, you can set them
@@ -22,33 +27,63 @@ by default in the rc file of your shell of preference (`.bashrc`, `.zshrc`,
 | ASDF_PROTONGE_STEAM_COMPAT_DIR | directory in which the custom protons will be installed. Defaults to `~/.steam/root/compatibilitytools.d` |
 | GITHUB_API_TOKEN               | GH token used for downloading the tarballs. This is useful because Github tends to rate limit API calls   |
 
-## How it works
+## Usage
 
-We are basically doing the instructions for manual installation:
-we download the version from GitHub, validate the checksum, and extract it on
-`~/.steam/root/compatibilitytools.d` by default, you can customize the
-extraction location by setting the `ASDF_PROTONGE_STEAM_COMPAT_DIR` environment
-variable (if you are using flatpak's steam for example, you can set it to
-`~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/` on your
-regular rc file).
+You can install any pre-compiled release from the Github release page.
 
-We manage installed versions by symlinking the extracted directory to
-`$ASDF_DIR/installs/protonge/$version`, that way we can prevent double
-installations and effectively run:
+### Examples of versions supported by asdf
 
 ```bash
-asdf uninstall protonge $version.
+# Install latest version available
+asdf install protonge latest
+
+# Install latest version starting with prefix
+asdf install protonge latest:GE-Proton8
+
+# Install specific version
+asdf install protonge GE-Proton9-18
 ```
 
-If you already have custom installations in your `~/.steam/root/compatibilitytools.d`
-directory you can manage with asdf-protonge by running the special command:
+> [!NOTE]
+> asdf ref versions (build from source) are not supported ~yet~
+>
+> This will not work:
+> ```bash
+> asdf install protonge ref:master
+> ```
+
+### Managing already installed versions
+
+If you already have custom installations in your `compatibilitytools.d`
+directory you can start managing them with asdf-protonge by running:
 
 ```bash
 asdf protonge manage $version
 ```
 
-To add all local versions to asdf you can run the script:
+An useful one-liner to manage all already installed versions is:
 
 ```bash
 ls ~/.steam/root/compatibilitytools.d | xargs asdf protonge manage
 ```
+
+## How it works
+
+We are basically doing the instructions for manual installation:
+
+1. Download the tarball and checksum from the GitHub releases page
+2. Validate the checksum
+3. Extract the tarball to the `compatibilitytools.d` directory
+4. Symlink the extracted directory to the asdf directory
+
+We manage installed versions by symlinking the extracted directory to
+`$ASDF_DIR/installs/protonge/$version`, that way we can prevent double
+installations and manage uninstallations with asdf.
+
+```bash
+asdf uninstall protonge $version
+```
+
+## TODO
+
+- Build from source and support asdf `ref:` installs
