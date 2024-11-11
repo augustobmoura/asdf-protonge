@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+printf "ProtonGE:       https://github.com/GloriousEggroll/proton-ge-custom\n"
+printf "asdf-protonge:  https://github.com/augustobmoura/asdf-protonge\n"
