@@ -53,7 +53,7 @@ If you want to force asfd to manage this version (meaning that \`asdf uninstall\
 }
 
 download() (
-	local download_type= version= download_path=
+	local download_type='' version='' download_path=''
 
 	check_for_already_installed "$version"
 
@@ -63,12 +63,17 @@ download() (
 
 	cd "$download_path"
 
-	local urls=
+	local urls=''
 	urls="$(get_download_urls "$version")"
 
-	local tarball_url= checksum_url=
-	tarball_url="$(printf "%s\n" "$urls" | grep -E '\.tar\.gz$')"
-	checksum_url="$(printf "%s\n" "$urls" | grep -E '\.sha512sum$')"
+	local tarball_url='' checksum_url=''
+	tarball_url="$(printf "%s\n" "$urls" | grep -E '\.tar\.gz$' || true)"
+	checksum_url="$(printf "%s\n" "$urls" | grep -E '\.sha512sum$' || true)"
+
+	if ! [ "$checksum_url" ]; then
+		printf "$ERROR: No checksum found for version %s; Release is broken or too old\n" "$version"
+		exit 1
+	fi
 
 	if [ "$download_type" = version ]; then
 		if ! [ "$tarball_url" ]; then
@@ -84,7 +89,7 @@ download() (
 
 		printf "Validating checksum\n"
 		if ! sha512sum -c ./*.sha512sum; then
-			printf "$(colored "$RED" "Checksum verification failed!\n"). Aborting...\n"
+			printf "$ERROR $(colored "$RED" "Checksum verification failed!\n"). Aborting...\n"
 			rm ./*.{tar.gz,sha512sum}
 			exit 1
 		fi
