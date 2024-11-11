@@ -25,7 +25,7 @@ by default in the rc file of your shell of preference (`.bashrc`, `.zshrc`,
 
 | Variable                       | Description                                                                                                |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| ASDF_PROTONGE_STEAM_COMPAT_DIR | directory in which the custom protons will be installed. Defaults to `~/.steam/root/compatibilitytools.d`. |
+| ASDF_PROTONGE_STEAM_COMPAT_DIR | directory in which the custom protons will be installed. Defaults to `~/.steam/root/compatibilitytools.d`. See tip below |
 | GITHUB_API_TOKEN               | GH token used for downloading the tarballs. This is useful because Github tends to rate limit API calls    |
 
 > [!TIP]
@@ -50,7 +50,7 @@ asdf install protonge GE-Proton9-18
 ```
 
 > [!NOTE]
-> asdf ref versions (build from source) are not supported ~yet~
+> asdf ref versions (build from source) are not supported ~yet~.
 > This will not work:
 >
 > ```bash
