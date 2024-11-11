@@ -28,7 +28,7 @@ by default in the rc file of your shell of preference (`.bashrc`, `.zshrc`,
 | ASDF_PROTONGE_STEAM_COMPAT_DIR | directory in which the custom protons will be installed. Defaults to `~/.steam/root/compatibilitytools.d`. |
 | GITHUB_API_TOKEN               | GH token used for downloading the tarballs. This is useful because Github tends to rate limit API calls    |
 
-> [!INFO]
+> [!TIP]
 > If you are using flatpak's Steam you need to set the `ASDF_PROTONGE_STEAM_COMPAT_DIR` variable to:
 > `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/`
 
