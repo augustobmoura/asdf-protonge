@@ -12,6 +12,7 @@ asdf plugin-add protonge https://github.com/augustobmoura/asdf-protonge.git
 ```
 
 Optional tools:
+
 - [`pv`](https://www.ivarch.com/programs/pv.shtml): We use `pv` to show progress
   bars when extracting the tarballs. It is specially useful in slower computers
   which could take a few minutes to finish extraction.
@@ -22,10 +23,10 @@ Configuration of the plugin is done by environment variables, you can set them
 by default in the rc file of your shell of preference (`.bashrc`, `.zshrc`,
 `.profile`, etc.).
 
-| Variable                       | Description                                                                                               |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| ASDF_PROTONGE_STEAM_COMPAT_DIR | directory in which the custom protons will be installed. Defaults to `~/.steam/root/compatibilitytools.d` |
-| GITHUB_API_TOKEN               | GH token used for downloading the tarballs. This is useful because Github tends to rate limit API calls   |
+| Variable                       | Description                                                                                                                                                                                                                                        |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ASDF_PROTONGE_STEAM_COMPAT_DIR | directory in which the custom protons will be installed. Defaults to `~/.steam/root/compatibilitytools.d`. If you are using flatpak's Steam you need to set this variable to `~/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d/` |
+| GITHUB_API_TOKEN               | GH token used for downloading the tarballs. This is useful because Github tends to rate limit API calls                                                                                                                                            |
 
 ## Usage
 
@@ -48,6 +49,7 @@ asdf install protonge GE-Proton9-18
 > asdf ref versions (build from source) are not supported ~yet~
 >
 > This will not work:
+>
 > ```bash
 > asdf install protonge ref:master
 > ```
