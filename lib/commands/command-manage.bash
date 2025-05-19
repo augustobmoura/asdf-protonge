@@ -43,6 +43,7 @@ $ERROR: Version %s is already being managed by asdf but points to a different lo
 		return 4
 	fi
 
+	mkdir -p "$(dirname "$asdf_install_path")"
 	ln -s "$installation_path" "$asdf_install_path"
 	printf "$SUCCESS: Managing %s as version %s now\n" "$installation_path" "$version"
 }
