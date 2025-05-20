@@ -63,13 +63,13 @@ If you already have custom installations in your `compatibilitytools.d`
 directory you can start managing them with asdf-protonge by running:
 
 ```bash
-asdf protonge manage $version
+asdf cmd protonge manage $version
 ```
 
 An useful one-liner to manage all already installed versions is:
 
 ```bash
-ls ~/.steam/root/compatibilitytools.d | xargs asdf protonge manage
+ls ~/.steam/root/compatibilitytools.d | xargs asdf cmd protonge manage
 ```
 
 ## How it works
