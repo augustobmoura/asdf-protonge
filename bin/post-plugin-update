@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+plugin_dir=$(cd "$here/.." && pwd)
+plugin_name=$(basename "$plugin_dir")
+
+migrate_old_symlinks() {
+	for dir in "${ASDF_DATA_DIR:-$HOME/.asdf}/installs/$plugin_name"/*; do
+		if [ -L "$dir" ] && [ -d "$dir" ]; then
+			printf "Migrating old symlink %s to new plugin format\n" "$dir" >&2
+
+			local linked_location
+			linked_location=$(cd "$dir" && pwd -P)
+
+			rm "$dir"
+			mkdir "$dir"
+			ln -s "$linked_location" "$dir/compat-dir"
+		fi
+	done
+}
+
+migrate_old_symlinks

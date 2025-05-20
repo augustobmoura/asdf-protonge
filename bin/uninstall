@@ -18,7 +18,7 @@ remove_steam_links() {
 			symlink_dir="$asdf_install_path/compat-dir"
 		fi
 
-		if [ -f "$symlink_dir" ]; then
+		if [ -d "$symlink_dir" ]; then
 			local linked_location
 			linked_location=$(cd "$symlink_dir" && pwd -P)
 
