@@ -14,3 +14,6 @@ export BOLD=1
 export RED=31 GREEN=32 YELLOW=33 BLUE=34 MAGENTA=35 CYAN=36
 
 export ERROR=$(colored $RED ERROR) WARNING=$(colored $YELLOW WARNING) SUCCESS=$(colored $GREEN SUCCESS)
+
+export REPO_PAGE=https://github.com/augustobmoura/asdf-protonge
+export ISSUES_PAGE="$REPO_PAGE/issues"

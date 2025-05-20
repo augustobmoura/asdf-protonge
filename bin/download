@@ -33,10 +33,18 @@ get_download_urls() {
 }
 
 check_for_already_installed() {
-	local target_dir="$ASDF_PROTONGE_STEAM_COMPAT_DIR/Proton-$version"
+	local version="$1"
+	local target_dir=''
 
-	if [ -d "$target_dir" ]; then
-		printf "
+	for dir in "$ASDF_PROTONGE_STEAM_COMPAT_DIR"/{Proton-,}"$version" ; do
+		if [ -d "$dir" ]; then
+			target_dir="$dir"
+			break
+		fi
+	done
+
+	if [ "$target_dir" ]; then
+		printf "\
 $ERROR: Directory for installation already exists and it's not being managed by asdf.
 This is probably because you installed the version with other tools different than asdf, or the versions being managed by asdf went out of sync.
 
@@ -46,20 +54,18 @@ To reinstall this version, remove the existing directory (%s) and try again.
 
 If you want to force asfd to manage this version (meaning that \`asdf uninstall\` will actually remove this directory), run:
 
-    asdf %s manage %s
+    asdf cmd %s manage %s
+
 " "$target_dir" "$target_dir" "$PLUGIN_NAME" "$version" "$PLUGIN_NAME" "$version"
 		return 1
 	fi
 }
 
 download() (
-	local download_type='' version='' download_path=''
+	local download_type="$1" version="$2" download_path="$3"
+	download_path="$(cd "$3" && pwd -P)"
 
 	check_for_already_installed "$version"
-
-	download_type="$1"
-	version="$2"
-	download_path="$(cd "$3" && pwd -P)"
 
 	cd "$download_path"
 

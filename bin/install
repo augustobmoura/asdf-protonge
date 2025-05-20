@@ -21,24 +21,39 @@ install_tarball() {
 
 	mkdir -p "$COMPAT_DIR"
 
-	local old_ls= new_ls= extracted_file=
+	local old_ls='' new_ls='' extracted_dir='' tarball_file=''
 	old_ls=$(ls "$COMPAT_DIR")
 
+	mv "$download_path"/* "$asdf_install_path"
+
+	tarball_file=$(ls "$asdf_install_path"/*.tar.gz 2>/dev/null || true)
+
+	if ! [ -f "$tarball_file" ]; then
+		printf "No tarball found in %s\n" "$(colored "$YELLOW" "$asdf_install_path")"
+		printf "Please check the download path and try again, or open an issue at %s\n" "$ISSUES_PAGE"
+		exit 1
+	fi
+
 	printf "Extracting...\n"
-	_read_file "$download_path"/*.tar.gz | tar zx -C "$COMPAT_DIR/"
-	printf "Extracting $(colored "$GREEN" OK)\n"
+	_read_file "$tarball_file" | tar zx -C "$COMPAT_DIR/"
+	printf "Extracting %s\n" "$(colored "$GREEN" OK)"
 
 	# We need the name of the extracted directory, which can have a different name from the tarball itself
 	# We do this by diffing `ls`
 	new_ls=$(ls "$COMPAT_DIR")
-	extracted_file=$(printf '%s\n%s' "$old_ls" "$new_ls" | sort | uniq -u | xargs)
+	extracted_dir=$(printf '%s\n%s' "$old_ls" "$new_ls" | sort | uniq -u | xargs)
 
-	rmdir "$asdf_install_path"
-	ln -fs "$COMPAT_DIR/$extracted_file" "$asdf_install_path"
-	printf "Symlinked %s to %s\n" "$(colored "$YELLOW" "$asdf_install_path")" "$(colored "$CYAN" "$COMPAT_DIR/$extracted_file")"
+	if ! [ "$extracted_dir" ]; then
+		printf "Failed to identify a extracted installation. Please report this issue to %s\n" "$(colored "$YELLOW" "$COMPAT_DIR")" "$ISSUES_PAGE"
+	fi
 
-	printf "\n$(colored "$GREEN" "Successfully installed!") Remember to restart your Steam, if it is already opened, and enable ProtonGE
-More information on enabling: https://github.com/GloriousEggroll/proton-ge-custom#enabling\n"
+	ln -fs "$COMPAT_DIR/$extracted_dir" "$asdf_install_path/compat-dir"
+	printf "Symlinked %s to %s\n" "$(colored "$YELLOW" "$asdf_install_path/compat-dir")" "$(colored "$CYAN" "$COMPAT_DIR/$extracted_dir")"
+
+	printf "
+%s Remember to restart your Steam if it is already opened, and to enable ProtonGE
+More information on enabling: https://github.com/GloriousEggroll/proton-ge-custom#enabling
+" "$(colored "$GREEN" OK)"
 }
 
 install_tarball "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"

@@ -8,17 +8,31 @@ remove_steam_links() {
 	local version="$1" asdf_install_path="$2"
 
 	# Sanity check, all installations made via asdf should be a link
-	if [ -L "$asdf_install_path" ]; then
-		local linked_location=
-		linked_location=$(cd "$asdf_install_path" && pwd -P)
+	if [ -L "$asdf_install_path" ] || [ -L "$asdf_install_path/compat-dir" ]; then
+		local symlink_dir=""
 
-		# Remove true installation location
-		rm -rf "$linked_location"
-		printf "Installation at %s removed\n" "$linked_location"
-		rm "$asdf_install_path"
-	else
-		rm -rf "$asdf_install_path"
+		# Older versions of asdf-protonge symlinked the whole directory
+		if [ -L "$asdf_install_path" ]; then
+			symlink_dir="$asdf_install_path"
+		else
+			symlink_dir="$asdf_install_path/compat-dir"
+		fi
+
+		if [ -f "$symlink_dir" ]; then
+			local linked_location
+			linked_location=$(cd "$symlink_dir" && pwd -P)
+
+			# Remove true installation location
+			rm -rf "$linked_location"
+			printf "$SUCCESS: Installation at %s removed\n" "$linked_location"
+		else
+			printf "$WARNING: Symlink broken for %s\n" "$symlink_dir"
+		fi
+
+		rm "$symlink_dir"
 	fi
+
+	rm -rf "$asdf_install_path"
 }
 
 remove_steam_links "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH"
