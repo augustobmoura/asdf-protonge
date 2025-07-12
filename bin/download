@@ -19,7 +19,7 @@ fetch() {
 	curl -fLO -C - "${extra_args[@]}" "$url"
 }
 
-get_download_urls() {
+fetch_tag_info() {
 	local tag="$1"
 	local extra_args=()
 
@@ -27,9 +27,29 @@ get_download_urls() {
 		extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
 	fi
 
-	curl -sfL "${extra_args[@]}" https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/"$tag" |
-		grep -Eo 'browser_download_url"\s*:\s*"[^"]*' |
-		grep -o "https://.*$"
+	curl -sfL "${extra_args[@]}" https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/"$tag"
+}
+
+get_download_urls() {
+	if is_executable jq; then
+		jq -r '.assets[].browser_download_url'
+	else
+		grep -Eo 'browser_download_url"\s*:\s*"[^"]*' | grep -o "https://.*$"
+	fi
+}
+
+print_changelog() {
+	_highlight() {
+		if is_executable highlight; then
+			highlight "$@"
+		else
+			cat
+		fi
+	}
+
+	if is_executable jq; then
+		printf "Changelog:\n\n%s\n\n" "$(jq -r '.body' | _highlight -O xterm256 -S markdown)"
+	fi
 }
 
 check_for_already_installed() {
@@ -69,8 +89,11 @@ download() (
 
 	cd "$download_path"
 
-	local urls=''
-	urls="$(get_download_urls "$version")"
+	local tag_info='' urls=''
+	tag_info="$(fetch_tag_info "$version")"
+	urls="$(get_download_urls <<< "$tag_info")"
+
+	print_changelog <<< "$tag_info"
 
 	local tarball_url='' checksum_url=''
 	tarball_url="$(printf "%s\n" "$urls" | grep -E '\.tar\.gz$' || true)"
