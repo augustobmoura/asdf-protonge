@@ -13,10 +13,9 @@ asdf plugin-add protonge https://github.com/augustobmoura/asdf-protonge.git
 
 Optional tools:
 
-- [`pv`](https://www.ivarch.com/programs/pv.shtml): We use `pv` to show progress
-  bars when extracting the tarballs. It is specially useful in slower computers
-  which could take a few minutes to finish extraction.
-
+- [`pv`](https://www.ivarch.com/programs/pv.shtml): We use `pv` to show progress bars when extracting the tarballs. It is specially useful in slower computers which could take a few minutes to finish extraction.
+- [`jq`](https://jqlang.org/): We use `jq` to extract the changelog, and it might become a hard requirement to have it installed in the future.
+- [`highlight`](http://andre-simon.de/doku/highlight/highlight.html): We use `highlight` to highlight the changelog output
 ## Configuration
 
 Configuration of the plugin is done by environment variables, you can set them
