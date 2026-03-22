@@ -8,6 +8,14 @@ if ! type tac &> /dev/null; then
 	}
 fi
 
+_sort() {
+	if which gsort &> /dev/null; then
+		gsort "$@"
+	else
+		sort "$@"
+	fi
+}
+
 get_releases_page() {
 	local page="$1" args=()
 
@@ -32,5 +40,5 @@ list_all() {
 	done
 }
 
-list_all "$@" | tac | xargs
+list_all "$@" | tac | _sort -V | xargs
 
