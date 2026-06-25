@@ -54,9 +54,10 @@ print_changelog() {
 
 check_for_already_installed() {
 	local version="$1"
+	local arch_suffix="$2"
 	local target_dir=''
 
-	for dir in "$ASDF_PROTONGE_STEAM_COMPAT_DIR"/{Proton-,}"$version" ; do
+	for dir in "$ASDF_PROTONGE_STEAM_COMPAT_DIR"/{Proton-,}"$version$arch_suffix" ; do
 		if [ -d "$dir" ]; then
 			target_dir="$dir"
 			break
@@ -85,7 +86,19 @@ download() (
 	local download_type="$1" version="$2" download_path="$3"
 	download_path="$(cd "$3" && pwd -P)"
 
-	check_for_already_installed "$version"
+	local arch_suffix='' tarball_pattern=''
+	case "$(uname -m)" in
+		x86_64)
+			tarball_pattern='GE-Proton[0-9]+-[0-9]+\.tar\.gz$' ;;
+		aarch64|arm64)
+			arch_suffix='-aarch64'
+			tarball_pattern='\-aarch64\.tar\.gz$' ;;
+		*)
+			printf "$ERROR: Unsupported architecture: %s\n" "$(uname -m)"
+			exit 1 ;;
+	esac
+
+	check_for_already_installed "$version" "$arch_suffix"
 
 	cd "$download_path"
 
@@ -96,8 +109,11 @@ download() (
 	print_changelog <<< "$tag_info"
 
 	local tarball_url='' checksum_url=''
-	tarball_url="$(printf "%s\n" "$urls" | grep -E '\.tar\.gz$' || true)"
-	checksum_url="$(printf "%s\n" "$urls" | grep -E '\.sha512sum$' || true)"
+	tarball_url="$(printf "%s\n" "$urls" | grep -E "$tarball_pattern" | head -n1 || true)"
+
+	local tarball_name=''
+	tarball_name="$(basename "${tarball_url:-}")"
+	checksum_url="$(printf "%s\n" "$urls" | grep "${tarball_name%.tar.gz}\.sha512sum$" || true)"
 
 	if ! [ "$checksum_url" ]; then
 		printf "$ERROR: No checksum found for version %s; Release is broken or too old\n" "$version"
