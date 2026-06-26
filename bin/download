@@ -56,12 +56,9 @@ check_for_already_installed() {
 	local version="$1"
 	local target_dir=''
 
-	for dir in "$ASDF_PROTONGE_STEAM_COMPAT_DIR"/{Proton-,}"$version" ; do
-		if [ -d "$dir" ]; then
-			target_dir="$dir"
-			break
-		fi
-	done
+	local dirs=''
+	dirs="$(ls -1 "$ASDF_PROTONGE_STEAM_COMPAT_DIR" 2>/dev/null || true)"
+	target_dir="$(printf "%s\n" "$dirs" | grep "$version" || true)"
 
 	if [ "$target_dir" ]; then
 		printf "\
@@ -76,8 +73,45 @@ If you want to force asfd to manage this version (meaning that \`asdf uninstall\
 
     asdf cmd %s manage %s
 
-" "$target_dir" "$target_dir" "$PLUGIN_NAME" "$version" "$PLUGIN_NAME" "$version"
+" "$target_dir" "$ASDF_PROTONGE_STEAM_COMPAT_DIR/$target_dir" "$PLUGIN_NAME" "$version" "$PLUGIN_NAME" "$version"
 		return 1
+	fi
+}
+
+# Pipe urls in, pipes file prefix out
+find_tarball_name() {
+	local version="$1"
+
+	local tarballs="" tarballs_len=0
+	tarballs=$(grep -E '\.tar\.gz$')
+	tarballs_len=$(printf "%s\n" "$tarballs" | wc -l)
+
+	if [ "$tarballs_len" = 0 ]; then
+		return 1
+	fi
+
+	if [ "$tarballs_len" = 1 ]; then
+		printf "%s\n" "${tarballs%.tar.gz}"
+		return 0
+	fi
+
+	# Since Proton11 multiple archs are available, we need to find the correct one for the current system
+	local arch='' found_name='' expected_name="$version"
+	arch=$(uname -m)
+
+	case "$arch" in
+		aarch64|arm64)
+			expected_name+='-aarch64'
+			;;
+	esac
+
+	found_name=$(printf "%s\n" "$tarballs" | grep "$expected_name.tar.gz" || true)
+
+	if [ "$found_name" ]; then
+		printf "%s\n" "${found_name%.tar.gz}"
+		return 0
+	else
+		printf "%s\n" "$tarballs" | head -n1
 	fi
 }
 
@@ -95,11 +129,12 @@ download() (
 
 	print_changelog <<< "$tag_info"
 
-	local tarball_url='' checksum_url=''
-	tarball_url="$(printf "%s\n" "$urls" | grep -E '\.tar\.gz$' || true)"
-	checksum_url="$(printf "%s\n" "$urls" | grep -E '\.sha512sum$' || true)"
+	local basename='' tarball_url='' checksum_url=''
+	basename="$(printf "%s\n" "$urls" | find_tarball_name "$version" || true)"
+	tarball_url="$basename.tar.gz"
+	checksum_url="$basename.sha512sum"
 
-	if ! [ "$checksum_url" ]; then
+	if ! printf "%s\n" "$urls" | grep -q "$checksum_url"; then
 		printf "$ERROR: No checksum found for version %s; Release is broken or too old\n" "$version"
 		exit 1
 	fi
