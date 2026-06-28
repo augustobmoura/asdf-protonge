@@ -10,13 +10,19 @@ is_executable() {
 
 fetch() {
 	local url="$1"
-	local extra_args=()
+	local extra_args=() status_code=''
 
 	if [ "${GITHUB_API_TOKEN:-}" ]; then
 		extra_args+=(--header "Authorization: token $GITHUB_API_TOKEN")
 	fi
 
-	curl -fLO -C - "${extra_args[@]}" "$url"
+	status_code=$(curl -w "%{http_code}" -fLO -C - "${extra_args[@]}" "$url" || true)
+
+	# 416 means that the file range is already downloaded
+	if [ "$status_code" -ge 400 ] && ! [ "$status_code" = 416 ]; then
+		printf "$ERROR: Failed to download %s (HTTP status code: %s)\n" "$url" "$status_code"
+		return 1
+	fi
 }
 
 fetch_tag_info() {
@@ -56,12 +62,9 @@ check_for_already_installed() {
 	local version="$1"
 	local target_dir=''
 
-	for dir in "$ASDF_PROTONGE_STEAM_COMPAT_DIR"/{Proton-,}"$version" ; do
-		if [ -d "$dir" ]; then
-			target_dir="$dir"
-			break
-		fi
-	done
+	local dirs=''
+	dirs="$(ls -1 "$ASDF_PROTONGE_STEAM_COMPAT_DIR" 2>/dev/null || true)"
+	target_dir="$(printf "%s\n" "$dirs" | grep "$version" || true)"
 
 	if [ "$target_dir" ]; then
 		printf "\
@@ -76,11 +79,44 @@ If you want to force asfd to manage this version (meaning that \`asdf uninstall\
 
     asdf cmd %s manage %s
 
-" "$target_dir" "$target_dir" "$PLUGIN_NAME" "$version" "$PLUGIN_NAME" "$version"
+" "$target_dir" "$ASDF_PROTONGE_STEAM_COMPAT_DIR/$target_dir" "$PLUGIN_NAME" "$version" "$PLUGIN_NAME" "$version"
 		return 1
 	fi
 }
 
+# Pipe urls in, pipes file prefix out
+find_tarball_url() {
+	local version="$1"
+
+	local tarballs="" tarballs_len=0
+	tarballs=$(grep -E '\.tar\.gz$')
+	tarballs_len=$(wc -l <<< "$tarballs")
+
+	if [ "$tarballs_len" = 0 ]; then
+		return 1
+	fi
+
+	if [ "$tarballs_len" = 1 ]; then
+		printf "%s\n" "$tarballs"
+		return 0
+	fi
+
+	# Since Proton11 multiple archs are available, we need to find the correct one for the current system
+	local arch='' found_name='' expected_name="$version"
+	arch=$(uname -m)
+	arch=arm64
+
+	case "$arch" in
+		aarch64|arm64)
+			expected_name+='-aarch64'
+			;;
+	esac
+
+	grep "$expected_name.tar.gz" <<< "$tarballs" \
+		|| head -n1 <<< "$tarballs"
+}
+
+# Download is a subshell, so we can cd into the download path without affecting the parent shell
 download() (
 	local download_type="$1" version="$2" download_path="$3"
 	download_path="$(cd "$3" && pwd -P)"
@@ -96,12 +132,12 @@ download() (
 	print_changelog <<< "$tag_info"
 
 	local tarball_url='' checksum_url=''
-	tarball_url="$(printf "%s\n" "$urls" | grep -E '\.tar\.gz$' || true)"
-	checksum_url="$(printf "%s\n" "$urls" | grep -E '\.sha512sum$' || true)"
+	tarball_url="$(find_tarball_url "$version" <<< "$urls" || true)"
+	checksum_url="$(grep "${tarball_url%.tar.gz}.sha512sum" <<< "$urls" || true)"
 
 	if ! [ "$checksum_url" ]; then
 		printf "$ERROR: No checksum found for version %s; Release is broken or too old\n" "$version"
-		exit 1
+		return 1
 	fi
 
 	if [ "$download_type" = version ]; then
@@ -120,11 +156,11 @@ download() (
 		if ! sha512sum -c ./*.sha512sum; then
 			printf "$ERROR $(colored "$RED" "Checksum verification failed!\n"). Aborting...\n"
 			rm ./*.{tar.gz,sha512sum}
-			exit 1
+			return 1
 		fi
 	else
 		printf "Building from source not supported\n"
-		exit 1
+		return 1
 	fi
 )
 

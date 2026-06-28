@@ -52,7 +52,7 @@ install_tarball() {
 
 	printf "
 Remember to restart your Steam if it is already opened, and to enable ProtonGE
-More information on enabling: https://github.com/GloriousEggroll/proton-ge-custom#enabling"
+More information on enabling: $(colored $YELLOW https://github.com/GloriousEggroll/proton-ge-custom#enabling)\n"
 }
 
 install_tarball "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_DOWNLOAD_PATH" "$ASDF_INSTALL_PATH"
