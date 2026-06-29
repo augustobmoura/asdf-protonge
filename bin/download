@@ -104,7 +104,6 @@ find_tarball_url() {
 	# Since Proton11 multiple archs are available, we need to find the correct one for the current system
 	local arch='' found_name='' expected_name="$version"
 	arch=$(uname -m)
-	arch=arm64
 
 	case "$arch" in
 		aarch64|arm64)
