@@ -109,6 +109,9 @@ find_tarball_url() {
 		aarch64|arm64)
 			expected_name+='-aarch64'
 			;;
+		x86_64)
+			expected_name+='-x86_64'
+			;;
 	esac
 
 	grep "$expected_name.tar.gz" <<< "$tarballs" \
