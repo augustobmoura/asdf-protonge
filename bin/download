@@ -102,16 +102,22 @@ find_tarball_url() {
 	fi
 
 	# Since Proton11 multiple archs are available, we need to find the correct one for the current system
-	local arch='' found_name='' expected_name="$version"
+	local arch='' expected_name="$version"
 	arch=$(uname -m)
 
 	case "$arch" in
 		aarch64|arm64)
 			expected_name+='-aarch64'
 			;;
+		x86_64|amd64)
+			expected_name+='-x86_64'
+			;;
 	esac
 
-	grep "$expected_name.tar.gz" <<< "$tarballs" \
+	# Newer releases suffix the tarball with the arch (e.g. -x86_64, -aarch64), but
+	# older releases only did so for non-x86_64 archs, leaving the x86_64 tarball name bare
+	grep -F "$expected_name.tar.gz" <<< "$tarballs" \
+		|| grep -F "$version.tar.gz" <<< "$tarballs" \
 		|| head -n1 <<< "$tarballs"
 }
 
